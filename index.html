@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25년 6월 13일 영단어 퀴즈 게임</title>
+  <style>
+    body {
+      background: #fce4ec;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      color: #d81b60;
+    }
+    #progress {
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+    #question {
+      font-size: 1.2em;
+      margin: 16px 0;
+    }
+    #masked {
+      font-size: 1.2em;
+      margin-bottom: 12px;
+    }
+    input {
+      padding: 8px;
+      width: calc(100% - 16px);
+      font-size: 1em;
+      border: 2px solid #f8bbd0;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    button {
+      background: #f48fb1;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      margin: 4px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #ffcdd2;
+      cursor: not-allowed;
+    }
+    #feedback {
+      margin: 12px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="intro">
+    <h1>25년 6월 13일 영단어 퀴즈 게임</h1>
+    <p>이름을 입력해주세요:</p>
+    <input type="text" id="nameInput" placeholder="이름">
+    <button id="startBtn">시작하기</button>
+  </div>
+
+  <div class="card" id="quiz" style="display:none;">
+    <div id="progress"></div>
+    <div id="question"></div>
+    <div id="masked"></div>
+    <input type="text" id="answer" placeholder="정답을 입력하세요">
+    <button id="submitBtn">제출</button>
+    <button id="nextBtn" style="display:none;">다음</button>
+    <div id="feedback"></div>
+  </div>
+
+  <div class="card" id="result" style="display:none;">
+    <h1>퀴즈 완료!</h1>
+    <p id="scoreText"></p>
+    <p id="timeText"></p>
+    <button id="sendBtn">점수 전송하기</button>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    // 단어 목록
+    const words =[
+  {"word": "right away", "meaning": "즉시, 바로"},
+  {"word": "forgetful", "meaning": "잘 잊는"},
+  {"word": "carry", "meaning": "운반하다"},
+  {"word": "else", "meaning": "다른, 그 밖의"},
+  {"word": "favor", "meaning": "부탁, 호의"},
+  {"word": "fix", "meaning": "고치다, 고정시키다"},
+  {"word": "plog", "meaning": "플로깅하다"},
+  {"word": "mean", "meaning": "의미하다"},
+  {"word": "at the same time", "meaning": "동시에"},
+  {"word": "by the way", "meaning": "그런데"},
+  {"word": "environment", "meaning": "환경"},
+  {"word": "zero", "meaning": "제로"},
+  {"word": "waste", "meaning": "쓰레기, 낭비"},
+  {"word": "challenge", "meaning": "도전"},
+  {"word": "produce", "meaning": "생산하다"},
+  {"word": "save", "meaning": "구하다, 모으다"},
+  {"word": "share", "meaning": "공유하다"},
+  {"word": "reduce", "meaning": "줄이다"},
+  {"word": "eat out", "meaning": "외식하다"},
+  {"word": "leftover", "meaning": "남은 음식"},
+  {"word": "FLY", "meaning": "for your information"},
+  {"word": "reuse", "meaning": "재사용하다"},
+  {"word": "tear", "meaning": "찢다"},
+  {"word": "decide", "meaning": "결심하다, 결정하다"},
+  {"word": "sew", "meaning": "바느질하다"},
+  {"word": "delivery", "meaning": "배달"},
+  {"word": "instead", "meaning": "대신에"},
+  {"word": "reusable", "meaning": "재사용할 수 있는"},
+  {"word": "container", "meaning": "용기, 그릇"},
+  {"word": "pick up", "meaning": "찾아오다"},
+  {"word": "recycle", "meaning": "재활용하다"},
+  {"word": "machine", "meaning": "기계"},
+  {"word": "one by one", "meaning": "하나씩, 차례로"},
+  {"word": "in return", "meaning": "대가로"},
+  {"word": "get sicker", "meaning": "더 아파지다"},
+  {"word": "last", "meaning": "지난"},
+  {"word": "bring", "meaning": "가져오다"},
+  {"word": "out of", "meaning": "~부터"},
+  {"word": "on the internet", "meaning": "인터넷으로"},
+  {"word": "learn", "meaning": "배우다"},
+  {"word": "important", "meaning": "중요한"},
+  {"word": "be good at", "meaning": "~잘하다"},
+  {"word": "look", "meaning": "~하게 보이다"},
+  {"word": "all right", "meaning": "괜찮은"},
+  {"word": "often", "meaning": "종종"},
+  {"word": "favorite", "meaning": "가장 좋아하는"},
+  {"word": "completely", "meaning": "완전히"},
+  {"word": "single-use", "meaning": "일회용의"},
+  {"word": "bottle", "meaning": "병"},
+  {"word": "near", "meaning": "가까운"},
+  {"word": "point", "meaning": "포인트"},
+  {"word": "cool", "meaning": "멋진"},
+  {"word": "join", "meaning": "동참하다"},
+  {"word": "unique", "meaning": "독특한"},
+  {"word": "own", "meaning": "자신의"},
+  {"word": "take off", "meaning": "벗기다"},
+  {"word": "clean up", "meaning": "치우다"},
+  {"word": "post", "meaning": "게시하다"},
+  {"word": "air conditioner", "meaning": "에어컨"},
+  {"word": "be on", "meaning": "켜져있다"},
+  {"word": "put", "meaning": "담다"},
+  {"word": "turn off", "meaning": "끄다"},
+  {"word": "run over", "meaning": "뛰어가다"},
+  {"word": "be late for", "meaning": "~에 늦다"},
+  {"word": "somebody else", "meaning": "다른 사람"},
+  {"word": "pick up", "meaning": "줍다"},
+  {"word": "interested", "meaning": "관심 있는"},
+  {"word": "help me with", "meaning": "나를 ~로 돕다"},
+  {"word": "heavy", "meaning": "무거운"},
+  {"word": "no problem", "meaning": "문제 없어"},
+  {"word": "empty", "meaning": "비우다"},
+  {"word": "trash can", "meaning": "쓰레기통"},
+  {"word": "be there on time", "meaning": "정각에 도착하다"},
+  {"word": "like(전치사)", "meaning": "~ 같은"},
+  {"word": "like(동사)", "meaning": "좋아하다"}
+];
+
+
+    // DOM 요소
+    const introEl = document.getElementById('intro');
+    const quizEl = document.getElementById('quiz');
+    const resultEl = document.getElementById('result');
+    const nameInput = document.getElementById('nameInput');
+    const startBtn = document.getElementById('startBtn');
+    const progressEl = document.getElementById('progress');
+    const questionEl = document.getElementById('question');
+    const maskedEl = document.getElementById('masked');
+    const answerInput = document.getElementById('answer');
+    const submitBtn = document.getElementById('submitBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const scoreText = document.getElementById('scoreText');
+    const timeText = document.getElementById('timeText');
+    const sendBtn = document.getElementById('sendBtn');
+    const responseEl = document.getElementById('response');
+
+    // 상태 변수
+    let playerName = '';
+    let startTime;
+    let score = 0;
+    let setIndex = 0;
+    let qIndex = 0;
+    let currentSet = [];
+
+    let isPreview = false;
+    let previewIndex = 0;
+
+    // 시작 버튼 클릭
+    startBtn.addEventListener('click', () => {
+      if (!nameInput.value.trim()) return;
+      playerName = nameInput.value.trim();
+      introEl.style.display = 'none';
+      quizEl.style.display = 'block';
+      startTime = Date.now();
+      isPreview = true;
+      previewIndex = 0;
+      showPreview();
+    });
+
+    // 예습 화면
+    function showPreview() {
+      const item = words[previewIndex];
+      progressEl.innerText = `예습 ${previewIndex+1} / ${words.length}`;
+      questionEl.innerText = `영어 단어: ${item.word}`;
+      maskedEl.innerText = `뜻: ${item.meaning}`;
+      answerInput.style.display = 'none';
+      submitBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+      feedbackEl.innerText = '';
+    }
+
+    // 다음 버튼 (예습/퀴즈 공용)
+    nextBtn.addEventListener('click', () => {
+      if (isPreview) {
+        previewIndex++;
+        if (previewIndex < words.length) {
+          showPreview();
+        } else {
+          // 예습 완료 → 퀴즈 1단계 시작
+          isPreview = false;
+          setIndex = 0;
+          score = 0;
+          nextSet();
+        }
+      } else {
+        // 퀴즈 진행
+        qIndex++;
+        if (qIndex < currentSet.length) {
+          showQuestion();
+        } else {
+          nextSet();
+        }
+      }
+    });
+
+    // 세트(단계) 전환
+    function nextSet() {
+      qIndex = 0;
+      setIndex++;
+      if (setIndex === 1) {
+        currentSet = shuffle([...words]);
+        showQuestion();
+      } else if (setIndex === 2) {
+        currentSet = shuffle([...words]);
+        showQuestion();
+      } else if (setIndex === 3) {
+        currentSet = shuffle([...words]);
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    // 문제 출력
+    function showQuestion() {
+      const item = currentSet[qIndex];
+      progressEl.innerText = `세트 ${setIndex} - 문제 ${qIndex+1} / ${currentSet.length}`;
+      feedbackEl.innerText = '';
+      answerInput.value = '';
+      answerInput.style.display = 'block';
+      submitBtn.style.display = 'inline-block';
+      nextBtn.style.display = 'none';
+
+      if (setIndex === 1) {
+        maskedEl.innerText = '';
+        questionEl.innerText = `영어 단어: ${item.word}`;
+      } else if (setIndex === 2) {
+        questionEl.innerText = `뜻: ${item.meaning}`;
+        maskedEl.innerText = maskWord(item.word, 0.5);
+      } else if (setIndex === 3) {
+        questionEl.innerText = `뜻: ${item.meaning}`;
+        maskedEl.innerText = maskWord(item.word, 0);
+      }
+    }
+
+    // 제출 처리
+    submitBtn.addEventListener('click', () => {
+      const item = currentSet[qIndex];
+      const userAns = answerInput.value.trim();
+      let correct = false;
+
+      if (setIndex === 1) {
+        // 뜻이 여러개일 경우 콤마로 분리 후 하나만 맞춰도 정답
+        const variants = item.meaning.split(',').map(s => s.trim());
+        correct = variants.includes(userAns);
+      } else {
+        correct = userAns.toLowerCase() === item.word.toLowerCase();
+      }
+
+      if (correct) {
+        feedbackEl.style.color = 'green';
+        feedbackEl.innerText = '정답! +10점';
+        score += 10;
+      } else {
+        feedbackEl.style.color = 'red';
+        feedbackEl.innerText = setIndex === 1
+          ? `오답! 정답: ${item.meaning}`
+          : `오답! 정답: ${item.word}`;
+      }
+
+      submitBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+    });
+
+    // 결과 화면
+    function showResult() {
+      quizEl.style.display = 'none';
+      resultEl.style.display = 'block';
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      scoreText.innerText = `총 점수: ${score}`;
+      timeText.innerText = `걸린 시간: ${elapsed}초`;
+
+      sendBtn.addEventListener('click', () => {
+        saveData('wordQuiz', playerName, score, elapsed);
+      });
+    }
+
+    // 배열 섞기
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // 단어 마스킹
+    function maskWord(word, percent) {
+      return word.split('').map(ch => {
+        if (ch === ' ') return ' ';
+        return Math.random() < percent ? ch : '_';
+      }).join('');
+    }
+
+    // 서버 전송 함수
+    function saveData(game, name, score, elapsedTime) {
+      const FUNCTION_URL = "https://us-central1-record-f420d.cloudfunctions.net/report";
+      const requestData = { game, name, score, elapsedTime };
+      fetch(FUNCTION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      })
+      .then(res => res.json().then(data => {
+        if (res.ok) {
+          responseEl.innerText = `성공: ${JSON.stringify(data, null, 2)}`;
+        } else {
+          responseEl.innerText = `오류: ${JSON.stringify(data, null, 2)}`;
+        }
+      }))
+      .catch(err => {
+        console.error(err);
+        responseEl.innerText = `네트워크 오류: ${err.message}`;
+      });
+    }
+
+  </script>
+</body>
+</html>
